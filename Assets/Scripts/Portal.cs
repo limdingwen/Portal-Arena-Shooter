@@ -86,9 +86,6 @@ public class Portal : MonoBehaviour
     // Teleportation
     private List<PortalableObject> objectsInPortal = new List<PortalableObject>();
 
-    // Main camera cache
-    private Camera mainCamera;
-
     private void Awake()
     {
         // Create render texture for portal view
@@ -102,9 +99,6 @@ public class Portal : MonoBehaviour
         // Generate plane of this portal for view through purposes
         Plane tempPlane = new Plane(portalNormal.forward, transform.position);
         viewThroughFromPlane = new Vector4(tempPlane.normal.x, tempPlane.normal.y, tempPlane.normal.z, tempPlane.distance);
-
-        // Cache camera
-        mainCamera = Camera.main;
     }
 
     private void Start()
@@ -133,10 +127,15 @@ public class Portal : MonoBehaviour
             target.viewThroughFromCamera.enabled = true;
         }
 
+        // Don't view through if no main camera (in game will appear as not updating)
+        // (shouldn't appear as anything anyway if there isn't a camera...)
+        if (!GameManager.instance.localMainCamera)
+            return;
+
         // Set target camera transform
         target.viewThroughFromCamera.transform.SetPositionAndRotation(
-            TransformPositionBetweenPortals(this, target, mainCamera.transform.position),
-            TransformRotationBetweenPortals(this, target, mainCamera.transform.rotation));
+            TransformPositionBetweenPortals(this, target, GameManager.instance.localMainCamera.transform.position),
+            TransformRotationBetweenPortals(this, target, GameManager.instance.localMainCamera.transform.rotation));
 
         // Convert target portal's plane to camera space (relative to target camera)
         // Explanation: https://danielilett.com/2019-12-18-tut4-3-matrix-matching/
@@ -146,7 +145,8 @@ public class Portal : MonoBehaviour
 
         // Set target camera projection matrix to clip walls between target portal and target camera
         // Portal camera will inherit FOV and near/clip values from main camera.
-        target.viewThroughFromCamera.projectionMatrix = mainCamera.CalculateObliqueMatrix(targetViewThroughPlaneCameraSpace);
+        target.viewThroughFromCamera.projectionMatrix = 
+            GameManager.instance.localMainCamera.CalculateObliqueMatrix(targetViewThroughPlaneCameraSpace);
     }
 
     private void UpdateTeleport()

@@ -1,12 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 /// <summary>
 /// The player controller.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPun
 {
     [Tooltip("First person camera")]
     public Camera firstPersonCamera;
@@ -42,12 +43,19 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        if (!photonView.IsMine)
+            return;
+
+        // HACKHACK: Disable cursor when player comes into play
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     private void Update()
     {
+        if (!photonView.IsMine)
+            return;
+
         // Mouse up/down, moves camera up and down (around X axis)
         // Clamp camera from -90 (straight up) to 90 (straight down)
         cameraRotX += Input.GetAxis("Mouse Y") * -mouseSensitivity.y;
