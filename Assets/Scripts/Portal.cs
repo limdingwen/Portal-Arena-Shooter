@@ -142,13 +142,13 @@ public class Portal : MonoBehaviour
 
         // Don't view through if no main camera (in game will appear as not updating)
         // (shouldn't appear as anything anyway if there isn't a camera...)
-        if (!GameManager.instance.localMainCamera)
+        if (!GameManager.instance.mainCamera)
             return;
 
         // Set target camera transform
         target.viewThroughFromCamera.transform.SetPositionAndRotation(
-            TransformPositionBetweenPortals(this, target, GameManager.instance.localMainCamera.transform.position),
-            TransformRotationBetweenPortals(this, target, GameManager.instance.localMainCamera.transform.rotation));
+            TransformPositionBetweenPortals(this, target, GameManager.instance.mainCamera.transform.position),
+            TransformRotationBetweenPortals(this, target, GameManager.instance.mainCamera.transform.rotation));
 
         // Convert target portal's plane to camera space (relative to target camera)
         // Explanation: https://danielilett.com/2019-12-18-tut4-3-matrix-matching/
@@ -159,7 +159,7 @@ public class Portal : MonoBehaviour
         // Set target camera projection matrix to clip walls between target portal and target camera
         // Portal camera will inherit FOV and near/clip values from main camera.
         target.viewThroughFromCamera.projectionMatrix = 
-            GameManager.instance.localMainCamera.CalculateObliqueMatrix(targetViewThroughPlaneCameraSpace);
+            GameManager.instance.mainCamera.CalculateObliqueMatrix(targetViewThroughPlaneCameraSpace);
     }
 
     private void UpdateTeleport()

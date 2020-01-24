@@ -1,28 +1,25 @@
-﻿using Photon.Pun;
-using Photon.Realtime;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// The game manager.
 /// </summary>
-public class GameManager : MonoBehaviourPunCallbacks
+public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
     // Player instantiation
     [Tooltip("The player prefab.")]
     public GameObject playerPrefab;
-    [Tooltip("The possible player spawns. Used in a round-robin manner to minimize spawning into each other.")]
-    public Transform[] playerSpawns;
-    private int playerSpawnIndex = 0;
+    private GameObject[] playerSpawns;
+    //private int playerSpawnIndex = 0;
 
     // Local instances
     [System.NonSerialized]
-    public Camera localMainCamera;
+    public Camera mainCamera;
     [System.NonSerialized]
-    public GameObject localPlayer;
+    public GameObject player;
 
     private void Awake()
     {
@@ -31,37 +28,17 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        if (!PhotonNetwork.IsConnected)
-        {
-            PhotonNetwork.ConnectUsingSettings();
-        }
-        else
-        {
-            StartNetworked();
-        }
-    }
+        // Get player spawns
+        playerSpawns = GameObject.FindGameObjectsWithTag("Spawn");
 
-    public override void OnConnectedToMaster()
-    {
-        Debug.Log("Connecting to test room...");
-        PhotonNetwork.JoinOrCreateRoom("Test Room", new RoomOptions(), TypedLobby.Default);
-    }
-
-    public override void OnJoinedRoom()
-    {
-        StartNetworked();
-    }
-
-    private void StartNetworked()
-    {
         // Get current spawn in a round-robin way
-        Transform playerSpawn = playerSpawns[playerSpawnIndex];
-        playerSpawnIndex++;
-        if (playerSpawnIndex >= playerSpawns.Length)
-            playerSpawnIndex = 0;
+        Transform playerSpawn = playerSpawns[0].transform;
+        //playerSpawnIndex++;
+        //if (playerSpawnIndex >= playerSpawns.Length)
+        //    playerSpawnIndex = 0;
 
         // Spawn player
-        localPlayer = PhotonNetwork.Instantiate(playerPrefab.name, playerSpawn.position, playerSpawn.rotation);
+        player = Instantiate(playerPrefab, playerSpawn.position, playerSpawn.rotation);
     }
 
     private void Update()

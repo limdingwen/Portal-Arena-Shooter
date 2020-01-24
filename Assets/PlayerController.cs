@@ -1,14 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Photon.Pun;
 using UnityEngine.AI;
 
 /// <summary>
 /// The player controller.
 /// </summary>
 [RequireComponent(typeof(CharacterController))]
-public class PlayerController : MonoBehaviourPun
+public class PlayerController : MonoBehaviour
 {
     [Tooltip("First person camera")]
     public Camera firstPersonCamera;
@@ -51,8 +50,6 @@ public class PlayerController : MonoBehaviourPun
 
     private void Start()
     {
-        if (!photonView.IsMine)
-            return;
         if (isAI)
             return;
 
@@ -63,17 +60,14 @@ public class PlayerController : MonoBehaviourPun
 
     private void Update()
     {
-        if (!photonView.IsMine)
-            return;
-
         if (isAI) UpdateAI();
         else UpdatePlayerInput();
     }
 
     private void UpdateAI()
     {
-        if (Time.frameCount % 30 == 0 && GameManager.instance.localPlayer)
-            navMeshAgent.SetDestination(GameManager.instance.localPlayer.transform.position);
+        if (Time.frameCount % 30 == 0 && GameManager.instance.player)
+            navMeshAgent.SetDestination(GameManager.instance.player.transform.position);
     }
 
     private void UpdatePlayerInput()
