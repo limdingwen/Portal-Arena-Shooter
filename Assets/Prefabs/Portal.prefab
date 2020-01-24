@@ -93,7 +93,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 3383
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -136,6 +136,36 @@ MonoBehaviour:
   m_RequiresDepthTexture: 0
   m_RequiresColorTexture: 0
   m_Version: 2
+--- !u!1 &5088246701583313645
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7043589085399753804}
+  m_Layer: 13
+  m_Name: Nav Mesh Link Guide
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7043589085399753804
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5088246701583313645}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.5, z: 0.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 6201253298455102458}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6201253298455102406
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,7 +179,7 @@ GameObject:
   - component: {fileID: 6201253298455102404}
   - component: {fileID: 7887348078512749896}
   - component: {fileID: 333102437589465302}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: Portal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -169,6 +199,7 @@ Transform:
   m_Children:
   - {fileID: 2480295815038658530}
   - {fileID: 5937593954377922789}
+  - {fileID: 7043589085399753804}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
@@ -233,6 +264,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   portalNormal: {fileID: 5937593954377922789}
+  navMeshLinkGuide: {fileID: 7043589085399753804}
   viewThroughToRenderer: {fileID: 6201253298455102404}
   viewThroughToShader: {fileID: -6465566751694194690, guid: af2d577b8541a1f47b06b2cd53027166,
     type: 3}

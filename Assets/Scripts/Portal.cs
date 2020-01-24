@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// A single portal. Can link up to other portals.
@@ -66,6 +67,8 @@ public class Portal : MonoBehaviour
     public Portal target;
     [Tooltip("This transform represents the normal of the portal's visible surface.")]
     public Transform portalNormal;
+    [Tooltip("This transform represents where the NavMeshLink will be generated.")]
+    public Transform navMeshLinkGuide;
 
     [Header("View through (to others)")]
     [Tooltip(
@@ -105,6 +108,16 @@ public class Portal : MonoBehaviour
     {
         // Make target camera render onto our render texture
         target.viewThroughFromCamera.targetTexture = viewThroughToTexture;
+
+        // Generate nav mesh links
+        NavMeshLink navMeshLink = gameObject.AddComponent<NavMeshLink>();
+        Vector3 temp = navMeshLinkGuide.localPosition;
+        temp.Scale(transform.localScale);
+        navMeshLink.startPoint = temp;
+        temp = transform.InverseTransformPoint(target.navMeshLinkGuide.position);
+        temp.Scale(transform.localScale);
+        navMeshLink.endPoint = temp;
+        navMeshLink.bidirectional = false;
     }
 
     private void LateUpdate()
@@ -155,18 +168,30 @@ public class Portal : MonoBehaviour
         {
             // Check if portalable object is behind the portal
             // If so, we can assume they have crossed through the portal.
-            // Implying from this, portals should not be floating in mid air.
-            // You should not be able to touch a portal from behind.
-            // This can be changed later to allow portals to be touched from behind.
+            // Implying from this, you should not be able to touch a portal from behind.
+            // This can be changed later to allow portals to be touched from behind, but no support for now.
             Vector3 objPosRelativeToPortalNormal = portalNormal.transform.InverseTransformPoint(objectsInPortal[i].transform.position);
             if (objPosRelativeToPortalNormal.z < 0)
             {
                 Debug.Log("Object warped!");
 
+                // NavMeshAgent support part 1
+                NavMeshAgent navMeshAgent = objectsInPortal[i].GetComponent<NavMeshAgent>();
+                if (navMeshAgent)
+                {
+                    navMeshAgent.enabled = false;
+                }
+
                 // Warp object
                 objectsInPortal[i].transform.SetPositionAndRotation(
                     TransformPositionBetweenPortals(this, target, objectsInPortal[i].transform.position),
                     TransformRotationBetweenPortals(this, target, objectsInPortal[i].transform.rotation));
+
+                // NavMeshAgent support part 2
+                if (navMeshAgent)
+                {
+                    navMeshAgent.enabled = true;
+                }
 
                 // Update physics transforms after warp
                 Physics.SyncTransforms();

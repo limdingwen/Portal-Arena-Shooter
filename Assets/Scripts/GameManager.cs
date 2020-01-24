@@ -19,15 +19,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     private int playerSpawnIndex = 0;
 
     // Local instances
-    /// <summary>
-    /// The local main camera. Possible to be null if no camera claims it.
-    /// Set this variable directly to claim main camera.
-    /// </summary>
-    [HideInInspector] public Camera localMainCamera;
-    /// <summary>
-    /// The local player. Possible to be null if no player is spawned.
-    /// </summary>
-    [HideInInspector] public GameObject localPlayer;
+    [System.NonSerialized]
+    public Camera localMainCamera;
+    [System.NonSerialized]
+    public GameObject localPlayer;
 
     private void Awake()
     {
@@ -67,5 +62,24 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         // Spawn player
         localPlayer = PhotonNetwork.Instantiate(playerPrefab.name, playerSpawn.position, playerSpawn.rotation);
+    }
+
+    private void Update()
+    {
+        // Release mouse on tab
+        if (Input.GetKeyDown("tab"))
+        {
+            Debug.Log("Toggling mouse");
+            if (Cursor.visible)
+            {
+                Cursor.visible = false;
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+            else
+            {
+                Cursor.visible = true;
+                Cursor.lockState = CursorLockMode.None;
+            }
+        }
     }
 }

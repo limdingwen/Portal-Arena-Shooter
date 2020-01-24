@@ -66,7 +66,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 11831
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -163,6 +163,8 @@ GameObject:
   - component: {fileID: 327147432102066377}
   - component: {fileID: 327147432102066376}
   - component: {fileID: 327147432102066375}
+  - component: {fileID: 5156629723183428547}
+  - component: {fileID: 1249161926698846046}
   m_Layer: 8
   m_Name: Cube
   m_TagString: Untagged
@@ -244,6 +246,42 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5156629723183428547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 327147432102066373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de57a3ed56b3d8847807304d7acc60b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layerMine: 8
+  layerNotMine: 11
+--- !u!114 &1249161926698846046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 327147432102066373}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 0
+  OwnershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 0}
+  viewIdField: 0
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!1 &327147432284677166
 GameObject:
   m_ObjectHideFlags: 0
@@ -260,6 +298,7 @@ GameObject:
   - component: {fileID: 327147432284677172}
   - component: {fileID: 2327698724886862486}
   - component: {fileID: 6036379118574315824}
+  - component: {fileID: 5241708718132864256}
   m_Layer: 8
   m_Name: Player
   m_TagString: Untagged
@@ -373,6 +412,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   firstPersonCamera: {fileID: 327147431606078554}
+  isAI: 0
   mouseSensitivity: {x: 1, y: 1}
   speed: {x: 5, y: 5}
   jumpSpeed: 5
@@ -380,7 +420,7 @@ MonoBehaviour:
   shootingRaycastOrigin: {fileID: 327147431606078555}
   shootingRaycastMask:
     serializedVersion: 2
-    m_Bits: 567
+    m_Bits: 2103
   shootingPortalRecursions: 2
   shootingRaycastTempPortalIgnoreLayer: 10
 --- !u!114 &2327698724886862486
@@ -438,3 +478,17 @@ MonoBehaviour:
     InterpolateOption: 0
     InterpolateMoveTowardsSpeed: 1
     InterpolateLerpSpeed: 0
+--- !u!114 &5241708718132864256
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 327147432284677166}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: de57a3ed56b3d8847807304d7acc60b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layerMine: 8
+  layerNotMine: 11

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
+using UnityEngine.AI;
 
 /// <summary>
 /// The player controller.
@@ -11,6 +12,11 @@ public class PlayerController : MonoBehaviourPun
 {
     [Tooltip("First person camera")]
     public Camera firstPersonCamera;
+    [Tooltip("Is AI?")]
+    public bool isAI = false;
+
+    //[Header("AI")]
+    
 
     [Header("Input")]
     [Tooltip("Angles per unit of mouse movement")]
@@ -35,15 +41,19 @@ public class PlayerController : MonoBehaviourPun
     public int shootingRaycastTempPortalIgnoreLayer = 10;
 
     private CharacterController characterController;
+    private NavMeshAgent navMeshAgent;
 
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        if (isAI) navMeshAgent = GetComponent<NavMeshAgent>();
     }
 
     private void Start()
     {
         if (!photonView.IsMine)
+            return;
+        if (isAI)
             return;
 
         // HACKHACK: Disable cursor when player comes into play
@@ -56,6 +66,18 @@ public class PlayerController : MonoBehaviourPun
         if (!photonView.IsMine)
             return;
 
+        if (isAI) UpdateAI();
+        else UpdatePlayerInput();
+    }
+
+    private void UpdateAI()
+    {
+        if (Time.frameCount % 30 == 0 && GameManager.instance.localPlayer)
+            navMeshAgent.SetDestination(GameManager.instance.localPlayer.transform.position);
+    }
+
+    private void UpdatePlayerInput()
+    {
         // Mouse up/down, moves camera up and down (around X axis)
         // Clamp camera from -90 (straight up) to 90 (straight down)
         cameraRotX += Input.GetAxis("Mouse Y") * -mouseSensitivity.y;

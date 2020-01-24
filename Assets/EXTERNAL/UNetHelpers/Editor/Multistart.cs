@@ -79,32 +79,33 @@ class Multistart : EditorWindow
     }
     public void StartGame()
     {
-        int windowWidth = desktopWidth / 2;
-        int windowHeight = desktopHeight / 2;
+        int windowWidth = 800;
+        int windowHeight = 600;
         Process proc = new Process();
         proc.StartInfo.FileName = GetPathToExecutable();
         proc.EnableRaisingEvents = false;
         proc.StartInfo.UseShellExecute = false;
         proc.StartInfo.RedirectStandardOutput = true;
         proc.StartInfo.Arguments = "-screen-fullscreen 0 -screen-width 800 -screen-height 600";
-        foreach (var _ in System.Linq.Enumerable.Range(1, 1))
+        foreach (var _ in System.Linq.Enumerable.Range(1, 2))
         {
             proc.Start();
         }
-        //var watch = new Stopwatch();
-        //watch.Start();
-        //while (watch.Elapsed.Seconds < timeOut)
-        //{
-        //    List<IntPtr> windows = FindWindowsWithText(windowTitle);
-        //    if (windows.Count.Equals(4))
-        //    {
-        //        MoveWindow(windows[0], 0 + horizontalOffset, 0, windowWidth, windowHeight, true);
-        //        MoveWindow(windows[1], windowWidth + horizontalOffset, 0, windowWidth, windowHeight, true);
-        //        MoveWindow(windows[2], 0 + horizontalOffset, windowHeight, windowWidth, windowHeight, true);
-        //        MoveWindow(windows[3], windowWidth + horizontalOffset, windowHeight, windowWidth, windowHeight, true);
-        //        break;
-        //    }
-        //}
+        var watch = new Stopwatch();
+        watch.Start();
+        while (watch.Elapsed.Seconds < timeOut)
+        {
+            List<IntPtr> windows = FindWindowsWithText(windowTitle);
+            if (windows.Count.Equals(2))
+            {
+                //MoveWindow(windows[0], desktopWidth - 800 + horizontalOffset, desktopHeight - 600, 800, 600, true);
+                MoveWindow(windows[0], horizontalOffset, 0, windowWidth, windowHeight, true);
+                MoveWindow(windows[1], windowWidth + horizontalOffset, 0, windowWidth, windowHeight, true);
+                //MoveWindow(windows[2], 0 + horizontalOffset, windowHeight, windowWidth, windowHeight, true);
+                //MoveWindow(windows[3], windowWidth + horizontalOffset, windowHeight, windowWidth, windowHeight, true);
+                break;
+            }
+        }
     }
     public void BuildGame()
     {
