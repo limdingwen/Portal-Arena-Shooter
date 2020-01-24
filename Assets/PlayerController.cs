@@ -36,8 +36,6 @@ public class PlayerController : MonoBehaviour
     public LayerMask shootingRaycastMask;
     [Tooltip("Limits recursion in portals for performance and prevents infinite loops")]
     public int shootingPortalRecursions = 2;
-    [Tooltip("Prevents raycast from shooting a target portal's trigger")]
-    public int shootingRaycastTempPortalIgnoreLayer = 10;
 
     private CharacterController characterController;
     private NavMeshAgent navMeshAgent;
@@ -120,7 +118,7 @@ public class PlayerController : MonoBehaviour
         if (ignoreObject)
         {
             ignoreObjectOriginalLayer = ignoreObject.layer;
-            ignoreObject.layer = shootingRaycastTempPortalIgnoreLayer;
+            ignoreObject.layer = 2; // Ignore raycast
         }
 
         // Shoot raycast.
