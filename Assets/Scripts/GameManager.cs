@@ -9,24 +9,32 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    // Player instantiation
+    [Header("Player instantiation")]
     [Tooltip("Number of players in a team")]
     public int teamPlayerCount = 10;
     [Tooltip("The human player prefab")]
     public GameObject humanPlayerPrefab;
     [Tooltip("The AI player prefab")]
     public GameObject aiPlayerPrefab;
+
+    [Header("Deathmatch Spawns")]
     [Tooltip("Tag for deathmatch spawns")]
     public string deathmatchSpawnTag = "Deathmatch Spawn";
     private GameObject[] deathmatchSpawns;
     [Tooltip("Should players, in deathmatch, respawn in blue/red spawns as well?")]
     public bool deathmatchSpawnIncludesInitials = true;
+    [Tooltip("If a player is occupying the space within X meters of a spawn, do not favor it.")]
+    public float deathmatchSpawnNearbyPlayerRadius = 1;
 
-    // Team definitions
-    [Tooltip("Blue team definition")]
+    [Header("Teams")]
+    [Tooltip("Blue team data")]
     public Team blueTeam;
-    [Tooltip("Red team definition")]
+    [Tooltip("Red team data")]
     public Team redTeam;
+
+    [Header("Game Settings")]
+    [Tooltip("Is friendly fire on?")]
+    public bool friendlyFire = false;
 
     // Global instances
     [System.NonSerialized]
@@ -58,17 +66,21 @@ public class GameManager : MonoBehaviour
         // Spawn human player
         if (includeHuman)
         {
-            humanPlayer = Spawn(spawnsList, humanPlayerPrefab, team).GetComponent<PlayerController>();
+            humanPlayer = Spawn(spawnsList, humanPlayerPrefab, team);
+            if (humanPlayer)
+                team.players.Add(humanPlayer);
         }
 
         // Spawn AI players
         for (int i = 0; i < teamPlayerCount - (includeHuman ? 1 : 0); i++)
         {
-            Spawn(spawnsList, aiPlayerPrefab, team);
+            PlayerController aiPlayer = Spawn(spawnsList, aiPlayerPrefab, team);
+            if (aiPlayer)
+                team.players.Add(aiPlayer);
         }
     }
 
-    private GameObject Spawn(List<GameObject> spawnsList, GameObject playerPrefab, Team team)
+    private PlayerController Spawn(List<GameObject> spawnsList, GameObject playerPrefab, Team team)
     {
         // Ran out of spawns?
         if (spawnsList.Count == 0)
@@ -80,14 +92,15 @@ public class GameManager : MonoBehaviour
         GameObject spawn = spawnsList[Random.Range(0, spawnsList.Count)];
         spawnsList.Remove(spawn);
 
-        GameObject newPlayer = Instantiate(playerPrefab, spawn.transform.position, spawn.transform.rotation);
-        newPlayer.GetComponent<PlayerController>().team = team;
+        PlayerController newPlayer = Instantiate(playerPrefab, spawn.transform.position, spawn.transform.rotation).GetComponent<PlayerController>();
+        newPlayer.team = team;
 
         return newPlayer;
     }
 
     public Transform GetRandomDeathmatchSpawn()
     {
+        // Compile list of spawns
         List<GameObject> spawns = new List<GameObject>(deathmatchSpawns);
         if (deathmatchSpawnIncludesInitials)
         {
@@ -95,7 +108,46 @@ public class GameManager : MonoBehaviour
             spawns.AddRange(blueTeam.spawns);
         }
 
-        return spawns[Random.Range(0, spawns.Count)].transform;
+        // Get favored spawns
+        List<GameObject> favoredSpawns = new List<GameObject>();
+        foreach (GameObject spawn in spawns)
+        {
+            // Check if person is near spawn
+            bool personNearSpawn = false;
+            foreach (PlayerController playerController in blueTeam.players)
+            {
+                if ((playerController.transform.position - spawn.transform.position).magnitude < deathmatchSpawnNearbyPlayerRadius)
+                {
+                    personNearSpawn = true;
+                    break;
+                }
+            }
+            if (personNearSpawn) break;
+            foreach (PlayerController playerController in redTeam.players)
+            {
+                if ((playerController.transform.position - spawn.transform.position).magnitude < deathmatchSpawnNearbyPlayerRadius)
+                {
+                    personNearSpawn = true;
+                    break;
+                }
+            }
+
+            // Add to favored spawn
+            if (!personNearSpawn)
+            {
+                favoredSpawns.Add(spawn);
+            }
+        }
+        
+        // Get random spawn, prioritizing favored spawns
+        List<GameObject> spawnListUsed = favoredSpawns.Count != 0 ? favoredSpawns : spawns;
+        return spawnListUsed[Random.Range(0, spawnListUsed.Count)].transform;
+    }
+
+    public Team GetEnemyTeam(Team yourTeam)
+    {
+        if (yourTeam == redTeam) return blueTeam;
+        else return redTeam;
     }
 
     //private void Update()

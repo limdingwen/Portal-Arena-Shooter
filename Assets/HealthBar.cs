@@ -15,7 +15,7 @@ public class HealthBar : MonoBehaviour
         {
             int health = Mathf.Clamp(player.health, 0, 100);
             text.text = health.ToString();
-            actualHealth.localScale = new Vector2(health / player.maxHealth, 1);
+            actualHealth.localScale = new Vector2((float) health / player.maxHealth, 1);
         }
     }
 }

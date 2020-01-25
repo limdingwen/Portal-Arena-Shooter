@@ -110,14 +110,13 @@ public class Portal : MonoBehaviour
         target.viewThroughFromCamera.targetTexture = viewThroughToTexture;
 
         // Generate nav mesh links
-        NavMeshLink navMeshLink = gameObject.AddComponent<NavMeshLink>();
+        OffMeshLink offMeshLink = gameObject.AddComponent<OffMeshLink>();
         Vector3 temp = navMeshLinkGuide.localPosition;
         temp.Scale(transform.localScale);
-        navMeshLink.startPoint = temp;
-        temp = transform.InverseTransformPoint(target.navMeshLinkGuide.position);
-        temp.Scale(transform.localScale);
-        navMeshLink.endPoint = temp;
-        navMeshLink.bidirectional = false;
+        offMeshLink.startTransform = navMeshLinkGuide;
+        offMeshLink.endTransform = target.navMeshLinkGuide;
+        offMeshLink.biDirectional = false;
+        //offMeshLink.costOverride = 0;
     }
 
     private void LateUpdate()
@@ -173,7 +172,7 @@ public class Portal : MonoBehaviour
             Vector3 objPosRelativeToPortalNormal = portalNormal.transform.InverseTransformPoint(objectsInPortal[i].transform.position);
             if (objPosRelativeToPortalNormal.z < 0)
             {
-                Debug.Log("Object warped!");
+                //Debug.Log("Object warped!");
 
                 // NavMeshAgent support part 1
                 NavMeshAgent navMeshAgent = objectsInPortal[i].GetComponent<NavMeshAgent>();
@@ -209,7 +208,7 @@ public class Portal : MonoBehaviour
         PortalableObject portalableObject = other.GetComponent<PortalableObject>();
         if (portalableObject)
         {
-            Debug.Log("Object added to portal");
+            //Debug.Log("Object added to portal");
             objectsInPortal.Add(portalableObject);
         }
     }

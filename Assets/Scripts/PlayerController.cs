@@ -52,10 +52,12 @@ public class PlayerController : MonoBehaviour
     [System.NonSerialized]
     public int health;
     [System.NonSerialized]
-    public bool alive = true;
+    public bool isAlive = true;
     [Tooltip("The pool name of the pool manager that manages blood effects")]
     public string bloodEffectPoolManagerName = "Blood Effect";
     private PoolManager bloodEffectPoolManager;
+    [Tooltip("Automatically suicide if below this Y, to bring player back to playfield if he has glitched out of world")]
+    public float killY = -10;
 
     [Header("Teams")]
     [Tooltip("What renderer's material to change tint for team color?")]
@@ -70,10 +72,17 @@ public class PlayerController : MonoBehaviour
     public Collider[] ragdollColliders;
     [Tooltip("GameObjects to disable when ragdoll")]
     public GameObject[] ragdollDisables;
-    [Tooltip("First rigidbody gets a force push of X amount on death, relative to where the bullet hit the hitbox.")]
+    [Tooltip("GameObjects to change layers to Ragdoll when ragdoll")]
+    public GameObject[] ragdollLayerChanges;
+    [Tooltip("Ragdoll layer")]
+    public int ragdollRagdollLayer;
+    // WARNING: ONLY USES FIRST RAGDOLL LAYER CHANGE OBJECT!!!
+    private int ragdollOriginalLayer;
+    [Tooltip("First rigidbody gets a force push of X amount on death, relative to where the bullet hit the hitbox")]
     public float ragdollDeathImpulse = 10;
 
     [Header("Respawning")]
+    [Tooltip("After death, the player will wait X amount of seconds before respawning")]
     public float respawnTime = 3;
     private float respawnTimeLeft;
 
@@ -83,6 +92,7 @@ public class PlayerController : MonoBehaviour
     {
         characterController = GetComponent<CharacterController>();
         health = initialHealth;
+        ragdollOriginalLayer = ragdollLayerChanges[0].layer;
     }
 
     private void Start()
@@ -111,7 +121,7 @@ public class PlayerController : MonoBehaviour
             shootingCooldownLeft -= Time.deltaTime;
 
         // Respawn after certain amount of time
-        if (!alive)
+        if (!isAlive)
         {
             if (respawnTimeLeft > 0)
             {
@@ -122,12 +132,18 @@ public class PlayerController : MonoBehaviour
                 Respawn();
             }
         }
+
+        // Kill if below KillY
+        if (transform.position.y < killY)
+        {
+            SendMessageUpwards("OnDamage", new OnDamageOptions(1000, transform.position, Vector3.up, Vector3.zero, this));
+        }
     }
 
     private void Respawn()
     {
         // Reset variables
-        alive = true;
+        isAlive = true;
         health = initialHealth;
         SetRagdoll(false);
 
@@ -138,9 +154,14 @@ public class PlayerController : MonoBehaviour
         ClipPlayerOutOfGround();
     }
 
+    /// <summary>
+    /// Rotates the FPS camera, rotating the model appropriately.
+    /// Can be called multiple times a frame.
+    /// </summary>
+    /// <param name="delta">X represents horizontal rotation, Y vertical.</param>
     public void RotateCamera(Vector2 delta)
     {
-        if (!alive)
+        if (!isAlive)
             return;
 
         // Mouse up/down, moves camera up and down (around X axis)
@@ -153,9 +174,12 @@ public class PlayerController : MonoBehaviour
         transform.Rotate(0, delta.x, 0);
     }
 
+    /// <summary>
+    /// Shoots the gun. Will not shoot if the cooldown is still active.
+    /// </summary>
     public void Shoot()
     {
-        if (!alive)
+        if (!isAlive)
             return;
         if (shootingCooldownLeft > 0)
             return;
@@ -175,9 +199,14 @@ public class PlayerController : MonoBehaviour
         shootingCooldownLeft = shootingCooldown;
     }
 
-    public void Move(Vector2 delta, bool jump = false)
+    /// <summary>
+    /// Moves the player. Must be called once and only once per frame to apply gravity.
+    /// </summary>
+    /// <param name="direction">The direction of movement on the XZ plane.</param>
+    /// <param name="jump">Should it try to jump if it's on ground?</param>
+    public void Move(Vector2 direction, bool jump = false, bool relativeToWorld = false)
     {
-        if (!alive)
+        if (!isAlive)
             return;
 
         if (characterController.isGrounded)
@@ -199,8 +228,8 @@ public class PlayerController : MonoBehaviour
 
         // WASD movement
         characterController.Move(
-            delta.y * speed.y * transform.forward * Time.deltaTime +
-            delta.x * speed.x * transform.right * Time.deltaTime +
+            direction.y * speed.y * (relativeToWorld ? Vector3.forward : transform.forward) * Time.deltaTime +
+            direction.x * speed.x * (relativeToWorld ? Vector3.right : transform.right) * Time.deltaTime +
             ySpeed * Vector3.up * Time.deltaTime);
     }
 
@@ -239,7 +268,7 @@ public class PlayerController : MonoBehaviour
                 // If the object hit is a portal, recurse, unless we are already at max recursions
                 if (currentRecursion < shootingPortalRecursions)
                 {
-                    Debug.Log($"Shooting recursive, #{currentRecursion+1}");
+                    //Debug.Log($"Shooting recursive, #{currentRecursion+1}");
                     ShootRecursive(
                         Portal.TransformPositionBetweenPortals(portal, portal.target, hit.point),
                         Portal.TransformDirectionBetweenPortals(portal, portal.target, direction),
@@ -252,7 +281,7 @@ public class PlayerController : MonoBehaviour
                 // If the object hit is not a portal, recursion ends here with an OnDamage
                 hit.collider.SendMessageUpwards(
                     "OnDamage",
-                    new OnDamageOptions(shootingDamage, hit.point, hit.normal),
+                    new OnDamageOptions(shootingDamage, hit.point, hit.normal, direction, this),
                     SendMessageOptions.DontRequireReceiver);
             }
         }
@@ -264,23 +293,28 @@ public class PlayerController : MonoBehaviour
         // Blood effect
         bloodEffectPoolManager.ActivatePooledObject(options.point, Quaternion.LookRotation(options.normal));
 
-        // Take damage
-        health -= options.damage;
-        if (alive && health <= 0)
+        // Take damage if not friendly fire
+        if (GameManager.instance.friendlyFire || options.inflictingPlayer.team != team || options.inflictingPlayer == this)
         {
-            // Die
-            alive = false;
-            respawnTimeLeft = respawnTime;
-            SetRagdoll(true);
-            ragdollRigidbodies[0].AddForceAtPosition(options.normal * -ragdollDeathImpulse, options.point, ForceMode.Impulse);
+            health -= options.damage;
+            if (isAlive && health <= 0)
+            {
+                // Die
+                isAlive = false;
+                respawnTimeLeft = respawnTime;
+                SetRagdoll(true);
+                ragdollRigidbodies[0].AddForceAtPosition(options.damageDirection * ragdollDeathImpulse, options.point, ForceMode.Impulse);
+            }
         }
     }
 
     private void SetRagdoll(bool ragdoll)
     {
-        ragdollRigidbodies[0].isKinematic = !ragdoll;
-        ragdollColliders[0].enabled = ragdoll;
-        //ragdollDisables[0].SetActive(!ragdoll);
+        foreach (Rigidbody rigidbody in ragdollRigidbodies) rigidbody.isKinematic = !ragdoll;
+        foreach (Collider collider in ragdollColliders) collider.enabled = ragdoll;
+        foreach (GameObject disable in ragdollDisables) disable.SetActive(!ragdoll);
+        foreach (GameObject layerChange in ragdollLayerChanges) layerChange.layer = ragdoll ? ragdollRagdollLayer : ragdollOriginalLayer;
+
         characterController.enabled = !ragdoll;
     }
 }

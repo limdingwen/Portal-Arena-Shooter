@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [System.Serializable]
-public struct Team
+public class Team
 {
     [Tooltip("Name of the team")]
     public string name;
@@ -13,4 +14,6 @@ public struct Team
 
     [System.NonSerialized]
     public GameObject[] spawns;
+    [System.NonSerialized]
+    public List<PlayerController> players = new List<PlayerController>();
 }

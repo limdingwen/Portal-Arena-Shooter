@@ -1,5 +1,28 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &8172486271948770670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 489004698351888527}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c3799ea4af4e8343931a210214b1b42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aimDeadZone: 0
+  aimSlowZone: 45
+  aimShootZone: 20
+  aimHorizontalRotationSpeed: 180
+  aimHorizontalSlowRotationSpeed: 90
+  aimLineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 8193
+  pathfindingInterval: 1
+  pathfindingAreaMask: -1
+  pathfindingCornerRange: 0.05
 --- !u!1001 &162984961807256737
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -168,4 +191,11 @@ PrefabInstance:
     - {fileID: 4140644412937702093, guid: 861ff51f6647ebc4488008e83550ed5c, type: 3}
     - {fileID: 4939940875904972830, guid: 861ff51f6647ebc4488008e83550ed5c, type: 3}
     - {fileID: 327147431606078554, guid: 861ff51f6647ebc4488008e83550ed5c, type: 3}
+    - {fileID: 5707647189943625817, guid: 861ff51f6647ebc4488008e83550ed5c, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 861ff51f6647ebc4488008e83550ed5c, type: 3}
+--- !u!1 &489004698351888527 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 327147432284677166, guid: 861ff51f6647ebc4488008e83550ed5c,
+    type: 3}
+  m_PrefabInstance: {fileID: 162984961807256737}
+  m_PrefabAsset: {fileID: 0}

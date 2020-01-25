@@ -50,6 +50,8 @@ MonoBehaviour:
   aiPlayerPrefab: {fileID: 489004698351888527, guid: c1770ff0ef265254f814d524601a6e00,
     type: 3}
   deathmatchSpawnTag: Deathmatch Spawn
+  deathmatchSpawnIncludesInitials: 1
+  deathmatchSpawnNearbyPlayerRadius: 1
   blueTeam:
     name: Blue
     color: {r: 0.39215687, g: 0.39215687, b: 0.87058824, a: 0}
@@ -58,6 +60,7 @@ MonoBehaviour:
     name: Red
     color: {r: 0.8679245, g: 0.38892844, b: 0.38892844, a: 0}
     spawnTag: Red Spawn
+  friendlyFire: 0
 --- !u!114 &1929439960454194488
 MonoBehaviour:
   m_ObjectHideFlags: 0
