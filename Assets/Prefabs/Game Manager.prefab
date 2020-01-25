@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4395723405942536458}
   - component: {fileID: 4395723405942536459}
+  - component: {fileID: 1929439960454194488}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Untagged
@@ -43,9 +44,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f11c676902e0b3468ce9bb2ad480c76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 327147432284677166, guid: 861ff51f6647ebc4488008e83550ed5c,
+  teamPlayerCount: 1
+  humanPlayerPrefab: {fileID: 327147432284677166, guid: 861ff51f6647ebc4488008e83550ed5c,
     type: 3}
-  playerSpawns:
-  - {fileID: 0}
-  localMainCamera: {fileID: 0}
-  localPlayer: {fileID: 0}
+  aiPlayerPrefab: {fileID: 489004698351888527, guid: c1770ff0ef265254f814d524601a6e00,
+    type: 3}
+  deathmatchSpawnTag: Deathmatch Spawn
+  blueTeam:
+    name: Blue
+    color: {r: 0.39215687, g: 0.39215687, b: 0.87058824, a: 0}
+    spawnTag: Blue Spawn
+  redTeam:
+    name: Red
+    color: {r: 0.8679245, g: 0.38892844, b: 0.38892844, a: 0}
+    spawnTag: Red Spawn
+--- !u!114 &1929439960454194488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4395723405942536456}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d47272e74304de64f99d3fc4bb9d6ad7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 5156590627340714809, guid: aaff6988b777ec54681fb0aac8d2b803, type: 3}
+  poolName: Blood Effect
+  initialCount: 30
+  canExpand: 1
+  debugEnabled: 1
+  debugCount: 0

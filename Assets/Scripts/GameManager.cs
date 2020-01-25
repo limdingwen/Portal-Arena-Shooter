@@ -10,16 +10,29 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
     // Player instantiation
-    [Tooltip("The player prefab.")]
-    public GameObject playerPrefab;
-    private GameObject[] playerSpawns;
-    //private int playerSpawnIndex = 0;
+    [Tooltip("Number of players in a team")]
+    public int teamPlayerCount = 10;
+    [Tooltip("The human player prefab")]
+    public GameObject humanPlayerPrefab;
+    [Tooltip("The AI player prefab")]
+    public GameObject aiPlayerPrefab;
+    [Tooltip("Tag for deathmatch spawns")]
+    public string deathmatchSpawnTag = "Deathmatch Spawn";
+    private GameObject[] deathmatchSpawns;
+    [Tooltip("Should players, in deathmatch, respawn in blue/red spawns as well?")]
+    public bool deathmatchSpawnIncludesInitials = true;
 
-    // Local instances
+    // Team definitions
+    [Tooltip("Blue team definition")]
+    public Team blueTeam;
+    [Tooltip("Red team definition")]
+    public Team redTeam;
+
+    // Global instances
     [System.NonSerialized]
     public Camera mainCamera;
     [System.NonSerialized]
-    public GameObject player;
+    public PlayerController humanPlayer;
 
     private void Awake()
     {
@@ -29,34 +42,78 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         // Get player spawns
-        playerSpawns = GameObject.FindGameObjectsWithTag("Spawn");
+        blueTeam.spawns = GameObject.FindGameObjectsWithTag(blueTeam.spawnTag);
+        redTeam.spawns = GameObject.FindGameObjectsWithTag(redTeam.spawnTag);
+        deathmatchSpawns = GameObject.FindGameObjectsWithTag(deathmatchSpawnTag);
 
-        // Get current spawn in a round-robin way
-        Transform playerSpawn = playerSpawns[0].transform;
-        //playerSpawnIndex++;
-        //if (playerSpawnIndex >= playerSpawns.Length)
-        //    playerSpawnIndex = 0;
-
-        // Spawn player
-        player = Instantiate(playerPrefab, playerSpawn.position, playerSpawn.rotation);
+        // Initially spawn at red and blue spawns
+        InitialSpawn(blueTeam, false);
+        InitialSpawn(redTeam, true);
     }
 
-    private void Update()
+    private void InitialSpawn(Team team, bool includeHuman)
     {
-        // Release mouse on tab
-        if (Input.GetKeyDown("tab"))
+        List<GameObject> spawnsList = new List<GameObject>(team.spawns);
+
+        // Spawn human player
+        if (includeHuman)
         {
-            Debug.Log("Toggling mouse");
-            if (Cursor.visible)
-            {
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
-            }
-            else
-            {
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
-            }
+            humanPlayer = Spawn(spawnsList, humanPlayerPrefab, team).GetComponent<PlayerController>();
+        }
+
+        // Spawn AI players
+        for (int i = 0; i < teamPlayerCount - (includeHuman ? 1 : 0); i++)
+        {
+            Spawn(spawnsList, aiPlayerPrefab, team);
         }
     }
+
+    private GameObject Spawn(List<GameObject> spawnsList, GameObject playerPrefab, Team team)
+    {
+        // Ran out of spawns?
+        if (spawnsList.Count == 0)
+        {
+            Debug.LogWarning($"Not enough spawns! Cannot spawn {teamPlayerCount} players in team {team.name}.");
+            return null;
+        }
+
+        GameObject spawn = spawnsList[Random.Range(0, spawnsList.Count)];
+        spawnsList.Remove(spawn);
+
+        GameObject newPlayer = Instantiate(playerPrefab, spawn.transform.position, spawn.transform.rotation);
+        newPlayer.GetComponent<PlayerController>().team = team;
+
+        return newPlayer;
+    }
+
+    public Transform GetRandomDeathmatchSpawn()
+    {
+        List<GameObject> spawns = new List<GameObject>(deathmatchSpawns);
+        if (deathmatchSpawnIncludesInitials)
+        {
+            spawns.AddRange(redTeam.spawns);
+            spawns.AddRange(blueTeam.spawns);
+        }
+
+        return spawns[Random.Range(0, spawns.Count)].transform;
+    }
+
+    //private void Update()
+    //{
+    //    // Release mouse on tab
+    //    if (Input.GetKeyDown("tab"))
+    //    {
+    //        Debug.Log("Toggling mouse");
+    //        if (Cursor.visible)
+    //        {
+    //            Cursor.visible = false;
+    //            Cursor.lockState = CursorLockMode.Locked;
+    //        }
+    //        else
+    //        {
+    //            Cursor.visible = true;
+    //            Cursor.lockState = CursorLockMode.None;
+    //        }
+    //    }
+    //}
 }
