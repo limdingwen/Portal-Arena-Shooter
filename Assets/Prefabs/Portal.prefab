@@ -236,6 +236,7 @@ MonoBehaviour:
   viewThroughToRenderer: {fileID: 6201253298455102404}
   viewThroughToShader: {fileID: 4800000, guid: ab5093d409a6ff64695c444e7359207b, type: 3}
   viewThroughFromCamera: {fileID: 9134369964125294763}
+  enableTeleportation: 1
 --- !u!65 &333102437589465302
 BoxCollider:
   m_ObjectHideFlags: 0

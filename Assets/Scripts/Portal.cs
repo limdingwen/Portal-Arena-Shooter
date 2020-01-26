@@ -86,6 +86,10 @@ public class Portal : MonoBehaviour
     [System.NonSerialized]
     public Vector4 viewThroughFromPlane;
 
+    [Header("Teleportation")]
+    [Tooltip("Disable teleportation for gameplay purposes or for performance reasons.")]
+    public bool enableTeleportation = true;
+
     // Teleportation
     private List<PortalableObject> objectsInPortal = new List<PortalableObject>();
 
@@ -163,6 +167,9 @@ public class Portal : MonoBehaviour
 
     private void UpdateTeleport()
     {
+        if (!enableTeleportation)
+            return;
+
         for (int i = 0; i < objectsInPortal.Count; i++)
         {
             // Check if portalable object is behind the portal
@@ -203,6 +210,9 @@ public class Portal : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (!enableTeleportation)
+            return;
+
         // Track object going through the portal
         // So we can teleport it instantly when it reaches the other side
         PortalableObject portalableObject = other.GetComponent<PortalableObject>();
@@ -215,6 +225,9 @@ public class Portal : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
+        if (!enableTeleportation)
+            return;
+
         // Untrack object no longer going through the portal
         PortalableObject portalableObject = other.GetComponent<PortalableObject>();
         if (portalableObject)

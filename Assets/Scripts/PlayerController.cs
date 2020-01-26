@@ -56,8 +56,6 @@ public class PlayerController : MonoBehaviour
     [Tooltip("The pool name of the pool manager that manages blood effects")]
     public string bloodEffectPoolManagerName = "Blood Effect";
     private PoolManager bloodEffectPoolManager;
-    [Tooltip("Automatically suicide if below this Y, to bring player back to playfield if he has glitched out of world")]
-    public float killY = -10;
 
     [Header("Teams")]
     [Tooltip("What renderer's material to change tint for team color?")]
@@ -134,7 +132,7 @@ public class PlayerController : MonoBehaviour
         }
 
         // Kill if below KillY
-        if (transform.position.y < killY)
+        if (transform.position.y < GameManager.instance.killY)
         {
             SendMessageUpwards("OnDamage", new OnDamageOptions(1000, transform.position, Vector3.up, Vector3.zero, this));
         }

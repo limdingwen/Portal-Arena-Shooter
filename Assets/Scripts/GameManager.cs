@@ -35,6 +35,8 @@ public class GameManager : MonoBehaviour
     [Header("Game Settings")]
     [Tooltip("Is friendly fire on?")]
     public bool friendlyFire = false;
+    [Tooltip("Automatically suicide if below this Y, to bring player back to playfield if he has glitched out of world")]
+    public float killY = -10;
 
     // Global instances
     [System.NonSerialized]
