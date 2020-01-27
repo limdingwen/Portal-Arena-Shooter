@@ -134,7 +134,7 @@ public class PlayerController : MonoBehaviour
         // Kill if below KillY
         if (transform.position.y < GameManager.instance.killY)
         {
-            SendMessageUpwards("OnDamage", new OnDamageOptions(1000, transform.position, Vector3.up, Vector3.zero, this));
+            SendMessageUpwards("OnDamage", new OnDamageOptions(1000, transform.position, Vector3.up, Vector3.zero, this, false));
         }
     }
 
@@ -279,7 +279,7 @@ public class PlayerController : MonoBehaviour
                 // If the object hit is not a portal, recursion ends here with an OnDamage
                 hit.collider.SendMessageUpwards(
                     "OnDamage",
-                    new OnDamageOptions(shootingDamage, hit.point, hit.normal, direction, this),
+                    new OnDamageOptions(shootingDamage, hit.point, hit.normal, direction, this, true),
                     SendMessageOptions.DontRequireReceiver);
             }
         }
@@ -289,7 +289,8 @@ public class PlayerController : MonoBehaviour
     private void OnDamage(OnDamageOptions options)
     {
         // Blood effect
-        bloodEffectPoolManager.ActivatePooledObject(options.point, Quaternion.LookRotation(options.normal));
+        if (options.drawBlood)
+            bloodEffectPoolManager.ActivatePooledObject(options.point, Quaternion.LookRotation(options.normal));
 
         // Take damage if not friendly fire
         if (GameManager.instance.friendlyFire || options.inflictingPlayer.team != team || options.inflictingPlayer == this)

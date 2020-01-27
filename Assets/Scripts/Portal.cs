@@ -96,9 +96,12 @@ public class Portal : MonoBehaviour
         Quaternion refRotation,
         out PortalRenderTexturePoolItem temporaryRenderTexturePoolItem,
         out Texture originalTexture,
+        out int renderCount,
         int currentRecursion = 0,
         int? overrideMaxRecursion = null)
     {
+        renderCount = 1;
+
         // =======
         // RECURSE
         // =======
@@ -124,11 +127,13 @@ public class Portal : MonoBehaviour
                     targetRefRotation,
                     out PortalRenderTexturePoolItem visiblePortalTemporaryRenderTexturePoolItem,
                     out Texture visiblePortalOriginalTexture,
+                    out int visiblePortalRenderCount,
                     currentRecursion + 1,
                     overrideMaxRecursion);
 
                 visiblePortalResourcesList.Add(
                     new VisiblePortalResources(visiblePortal, visiblePortalTemporaryRenderTexturePoolItem, visiblePortalOriginalTexture));
+                renderCount += visiblePortalRenderCount;
             }
         }
 
@@ -310,6 +315,9 @@ public class Portal : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (Camera.current.CompareTag("No Gizmo Camera"))
+            return;
+
         // Draw editor line to target portal to visualize linkage
         if (target)
         {

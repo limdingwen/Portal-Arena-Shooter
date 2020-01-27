@@ -13,7 +13,8 @@ public class PortalRenderer : MonoBehaviour
     [Tooltip("When not in a portal occlusion volume, render all portals?")]
     public bool defaultRenderAllPortals = false;
 
-    public int debugRenderPortalCount = 0;
+    public int debugDirectPortalCount = 0;
+    public int debugTotalPortalCount = 0;
 
     private Portal[] allPortals;
     private PortalOcclusionVolume[] portalOcclusionVolumes;
@@ -42,7 +43,7 @@ public class PortalRenderer : MonoBehaviour
         }
 
         Portal[] portalsToRender = currentVolume ? currentVolume.visiblePortals : defaultRenderAllPortals ? allPortals : null;
-        debugRenderPortalCount = 0;
+        debugDirectPortalCount = 0;
         if (portalsToRender != null)
         {
             foreach (Portal portal in portalsToRender)
@@ -55,8 +56,10 @@ public class PortalRenderer : MonoBehaviour
                         GameManager.instance.mainCamera.transform.position,
                         GameManager.instance.mainCamera.transform.rotation,
                         out PortalRenderTexturePoolItem _,
-                        out Texture _);
-                    debugRenderPortalCount++;
+                        out Texture _,
+                        out int renderCount);
+                    debugDirectPortalCount++;
+                    debugTotalPortalCount = renderCount;
                 }
             }
         }

@@ -8,6 +8,7 @@ TagManager:
   - Blue Spawn
   - Red Spawn
   - Deathmatch Spawn
+  - No Gizmo Camera
   layers:
   - Default
   - TransparentFX

@@ -125,11 +125,6 @@ PrefabInstance:
       propertyPath: isAI
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 327147432284677172, guid: 861ff51f6647ebc4488008e83550ed5c,
-        type: 3}
-      propertyPath: shootingDamage
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 909358684612634953, guid: 861ff51f6647ebc4488008e83550ed5c,
         type: 3}
       propertyPath: panLevelCustomCurve.m_Curve.Array.data[0].value

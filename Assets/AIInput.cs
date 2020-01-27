@@ -216,6 +216,9 @@ public class AIInput : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+        if (Camera.current.CompareTag("No Gizmo Camera"))
+            return;
+
         if (path == null || path.status == NavMeshPathStatus.PathInvalid)
         {
             Gizmos.color = Color.red;

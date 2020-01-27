@@ -113,7 +113,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultRenderAllPortals: 0
-  debugRenderPortalCount: 0
+  debugDirectPortalCount: 0
+  debugTotalPortalCount: 0
 --- !u!114 &4946515359605215773
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -515,7 +516,7 @@ GameObject:
   - component: {fileID: 585166842849060395}
   m_Layer: 0
   m_Name: 1p Camera
-  m_TagString: Untagged
+  m_TagString: No Gizmo Camera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
