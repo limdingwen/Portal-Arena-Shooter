@@ -194,6 +194,11 @@ public partial class GameManager : MonoBehaviour
         return newPlayer;
     }
 
+    /// <summary>
+    /// Gets a deathmatch spawnpoint to spawn manually from. Callee must manually apply globalSpawnOffset to the spawn position.
+    /// Takes into account favored spawns (such as favoring spawns with no other players around it, etc)
+    /// </summary>
+    /// <returns>A random deathmatch spawn</returns>
     public Transform GetRandomDeathmatchSpawn()
     {
         // Compile list of spawns

@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Two Colors.unity
-    guid: 803a4226054c5c34d89e5d3e494287ee
+    path: Assets/Scenes/Main Menu.unity
+    guid: 9374a2e05a2a9a14abfbe90d781cc14f
+  - enabled: 1
+    path: Assets/Scenes/Hotel.unity
+    guid: bba08bd221c091b4f905ca9cc3466988
   m_configObjects: {}
