@@ -316,6 +316,13 @@ public class Portal : MonoBehaviour
             Gizmos.color = Color.red;
             Gizmos.DrawLine(transform.position, target.transform.position);
         }
+
+        // Draw editor line to visible portals
+        Gizmos.color = Color.blue;
+        foreach (Portal visiblePortal in viewThroughFromVisiblePortals)
+        {
+            Gizmos.DrawLine(transform.position, visiblePortal.transform.position);
+        }
     }
 
     private void OnDestroy()

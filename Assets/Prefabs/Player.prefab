@@ -111,7 +111,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 28d6cc214c0095040bba3314a88fdeb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultRenderAllPortals: 1
+  defaultRenderAllPortals: 0
+  debugRenderPortalCount: 0
 --- !u!1 &327147432102066373
 GameObject:
   m_ObjectHideFlags: 0

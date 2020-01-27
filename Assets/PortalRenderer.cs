@@ -5,7 +5,6 @@ using UnityEngine;
 /// <summary>
 /// Attach to a camera that renders portals.
 /// This component takes into account portal occlusion volumes and then manually calls each directly visible portal to render recursively.
-/// Required due to needing to release temporary render textures after rendering.
 /// </summary>
 public class PortalRenderer : MonoBehaviour
 {
@@ -18,7 +17,6 @@ public class PortalRenderer : MonoBehaviour
 
     private Portal[] allPortals;
     private PortalOcclusionVolume[] portalOcclusionVolumes;
-    private List<PortalRenderTexturePoolItem> renderTexturesToReleaseThisRender = new List<PortalRenderTexturePoolItem>();
 
     private void Awake()
     {
@@ -47,7 +45,6 @@ public class PortalRenderer : MonoBehaviour
         debugRenderPortalCount = 0;
         if (portalsToRender != null)
         {
-            renderTexturesToReleaseThisRender.Clear();
             foreach (Portal portal in portalsToRender)
             {
                 // Frustum cull; do not render portal view through texture if not visible
@@ -57,9 +54,8 @@ public class PortalRenderer : MonoBehaviour
                         portal,
                         GameManager.instance.mainCamera.transform.position,
                         GameManager.instance.mainCamera.transform.rotation,
-                        out PortalRenderTexturePoolItem portalRenderTexturePoolItem,
+                        out PortalRenderTexturePoolItem _,
                         out Texture _);
-                    renderTexturesToReleaseThisRender.Add(portalRenderTexturePoolItem);
                     debugRenderPortalCount++;
                 }
             }
@@ -68,9 +64,6 @@ public class PortalRenderer : MonoBehaviour
 
     private void OnPostRender()
     {
-        foreach (PortalRenderTexturePoolItem portalRenderTexturePoolItem in renderTexturesToReleaseThisRender)
-        {
-            GameManager.instance.ReleasePortalRenderTexture(portalRenderTexturePoolItem);
-        }
+        GameManager.instance.ReleaseAllPortalRenderTextures();
     }
 }

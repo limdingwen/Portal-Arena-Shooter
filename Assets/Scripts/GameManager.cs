@@ -131,6 +131,17 @@ public partial class GameManager : MonoBehaviour
         item.used = false;
     }
 
+    /// <summary>
+    /// Releases all PortalRenderTextures.
+    /// </summary>
+    public void ReleaseAllPortalRenderTextures()
+    {
+        foreach (PortalRenderTexturePoolItem item in portalRenderTexturesPool)
+        {
+            ReleasePortalRenderTexture(item);
+        }
+    }
+
     private PortalRenderTexturePoolItem AllocatePortalRenderTexture(bool used = false)
     {
         RenderTexture renderTexture = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.DefaultHDR);
