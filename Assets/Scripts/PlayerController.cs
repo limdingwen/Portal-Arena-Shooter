@@ -157,14 +157,15 @@ public class PlayerController : MonoBehaviour
     /// Can be called multiple times a frame.
     /// </summary>
     /// <param name="delta">X represents horizontal rotation, Y vertical.</param>
-    public void RotateCamera(Vector2 delta)
+    public void RotateCamera(Vector2 delta, bool absoluteY = false)
     {
         if (!isAlive)
             return;
 
         // Mouse up/down, moves camera up and down (around X axis)
         // Clamp camera from -90 (straight up) to 90 (straight down)
-        cameraRotX += delta.y;
+        if (absoluteY) cameraRotX = delta.y;
+        else cameraRotX += delta.y;
         cameraRotX = Mathf.Clamp(cameraRotX, -90, 90);
         firstPersonCamera.localRotation = Quaternion.Euler(cameraRotX, 0, 0);
 

@@ -216,22 +216,30 @@ public partial class GameManager : MonoBehaviour
                     break;
                 }
             }
-            if (personNearSpawn) break;
-            foreach (PlayerController playerController in redTeam.players)
+
+            // Only check if not already true
+            if (!personNearSpawn)
             {
-                if ((playerController.transform.position - spawn.transform.position).magnitude < deathmatchSpawnNearbyPlayerRadius)
+                foreach (PlayerController playerController in redTeam.players)
                 {
-                    personNearSpawn = true;
-                    break;
+                    if ((playerController.transform.position - spawn.transform.position).magnitude < deathmatchSpawnNearbyPlayerRadius)
+                    {
+                        personNearSpawn = true;
+                        break;
+                    }
                 }
             }
 
+            // If no person near spawn at all,
             // Add to favored spawn
             if (!personNearSpawn)
             {
                 favoredSpawns.Add(spawn);
             }
         }
+
+        if (favoredSpawns.Count == 0)
+            Debug.Log("No favored spawns!");
         
         // Get random spawn, prioritizing favored spawns
         List<GameObject> spawnListUsed = favoredSpawns.Count != 0 ? favoredSpawns : spawns;

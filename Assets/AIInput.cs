@@ -84,7 +84,7 @@ public class AIInput : MonoBehaviour
 
             // Calculate angle offsets to enemy
             float horizontalAngle = Vector3.SignedAngle(playerController.shootingRaycastOrigin.forward, direction, Vector3.up);
-            float verticalAngle = Vector3.SignedAngle(playerController.shootingRaycastOrigin.forward, direction, playerController.shootingRaycastOrigin.right);
+            float absoluteVerticalAngle = Vector3.SignedAngle(transform.forward, direction, transform.right);
 
             // Calculate horizontal rotation needed to reach enemy, taking slowzone into account
             float horizontalRotation;
@@ -127,7 +127,7 @@ public class AIInput : MonoBehaviour
             }
 
             // Rotate player
-            playerController.RotateCamera(new Vector2(-horizontalRotation, 0));
+            playerController.RotateCamera(new Vector2(-horizontalRotation, absoluteVerticalAngle), true);
 
             // Shoot if within shoot zone
             if (horizontalAngle > -aimShootZone && horizontalAngle < aimShootZone)
@@ -204,6 +204,51 @@ public class AIInput : MonoBehaviour
 
         // Move playercontroller
         playerController.Move(movementDelta, movementJump, movementRelativeToWorld);
+    }
+
+    /// <summary>
+    /// Attempts to change the path's current corner to a corner on the path described using a Vector3 world position.
+    /// Useful when trying to change a path's current corner to an offmeshlink point or a known corner.
+    /// </summary>
+    /// <param name="referenceCorner">The ference corner, world position.</param>
+    /// <param name="samplePosition">Should we use a sample position from the nav mesh instead of raw position?</param>
+    /// <param name="indexOffset">Change the current corner to the NEXT or PREVIOUS one instead?</param>
+    /// <param name="tolerance">What is the tolerance for the reference corner? Combating floating point errors.</param>
+    /// <returns>True if success (corner found), false if not.</returns>
+    public bool AttemptChangePathCurrentCorner(Vector3 referenceCorner, bool samplePosition = true, int indexOffset = 0, float tolerance = 0.01f)
+    {
+        Vector3 position;
+
+        if (samplePosition && NavMesh.SamplePosition(referenceCorner, out NavMeshHit hit, 2, NavMesh.AllAreas))
+        {
+            position = hit.position;
+        }
+        else
+        {
+            position = referenceCorner;
+        }
+
+        if (pathCorners != null)
+        {
+            for (int i = 0; i < pathCorners.Length; i++)
+            {
+                if ((position - pathCorners[i]).magnitude < tolerance)
+                {
+                    pathCurrentCornerIndex = i + indexOffset;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Forces the AI to recalculate the next frame it has to move on a NavMesh.
+    /// </summary>
+    public void ForcePathRecalculate()
+    {
+        pathfindingIntervalLeft = 0;
     }
 
     private bool HasLineOfSight(Vector3 target)

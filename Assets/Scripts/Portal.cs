@@ -276,6 +276,21 @@ public class Portal : MonoBehaviour
                     navMeshAgent.enabled = true;
                 }
 
+                // AIInput support
+                AIInput aiInput = objectsInPortal[i].GetComponent<AIInput>();
+                if (aiInput)
+                {
+                    /*if (aiInput.AttemptChangePathCurrentCorner(target.navMeshLinkGuide.position, indexOffset: 1))
+                    {
+                        Debug.Log("FAILED");
+                    }
+                    else
+                    {
+                        Debug.Log("SUCCESS");
+                    }*/
+                    aiInput.ForcePathRecalculate();
+                }
+
                 // Update physics transforms after warp
                 Physics.SyncTransforms();
 

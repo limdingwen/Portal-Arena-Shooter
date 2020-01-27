@@ -50,11 +50,12 @@ public class PortalSanityChecker : ScriptableObject
             }
 
             // Check scale difference
-            if (
+            /*if (
                 Mathf.Abs(portal.transform.lossyScale.x - portal.target.transform.lossyScale.x) > GlobalScaleTolerance ||
                 Mathf.Abs(portal.transform.lossyScale.y - portal.target.transform.lossyScale.y) > GlobalScaleTolerance ||
                 Mathf.Abs(portal.transform.lossyScale.z - portal.target.transform.lossyScale.z) > GlobalScaleTolerance
-                )
+                )*/
+            if ((portal.transform.lossyScale - portal.target.transform.lossyScale).magnitude > GlobalScaleTolerance)
             {
                 buffer += $"{portal.gameObject.name} and {portal.target.gameObject.name} has differing global scales.\n";
             }

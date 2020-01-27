@@ -126,7 +126,7 @@ MonoBehaviour:
     type: 3}
   deathmatchSpawnTag: Deathmatch Spawn
   deathmatchSpawnIncludesInitials: 1
-  deathmatchSpawnNearbyPlayerRadius: 1
+  deathmatchSpawnNearbyPlayerRadius: 3
   blueTeam:
     name: Blue
     color: {r: 0.39215687, g: 0.39215687, b: 0.87058824, a: 0}
