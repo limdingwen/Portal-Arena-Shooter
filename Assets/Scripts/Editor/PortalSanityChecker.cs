@@ -29,6 +29,26 @@ public class PortalSanityChecker : ScriptableObject
                 buffer += $"{portal.gameObject.name}'s target, {portal.target.gameObject.name}, does not link back.\n";
             }
 
+            // Check if each of portal's visible portals link back
+            // If A can see B, B should be able to see A as well
+            foreach (Portal visiblePortal in portal.viewThroughFromVisiblePortals)
+            {
+                bool doesLinkBack = false;
+                foreach (Portal visiblePortalInVisiblePortal in visiblePortal.viewThroughFromVisiblePortals)
+                {
+                    if (visiblePortalInVisiblePortal == portal)
+                    {
+                        doesLinkBack = true;
+                        break;
+                    }
+                }
+
+                if (!doesLinkBack)
+                {
+                    buffer += $"{portal.gameObject.name}'s visible portal, {visiblePortal.gameObject.name}, does not link back.\n";
+                }
+            }
+
             // Check scale difference
             if (
                 Mathf.Abs(portal.transform.lossyScale.x - portal.target.transform.lossyScale.x) > GlobalScaleTolerance ||

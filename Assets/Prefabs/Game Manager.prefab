@@ -40,7 +40,7 @@ Camera:
   m_GameObject: {fileID: 3892204473553744555}
   m_Enabled: 0
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 3
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
@@ -138,7 +138,7 @@ MonoBehaviour:
   friendlyFire: 0
   killY: -10
   portalCamera: {fileID: 277741201413690947}
-  portalMaxRecursion: 1
+  portalMaxRecursion: 3
   portalRenderTexturesPoolInitialSize: 0
   portalRenderTexturesPoolMaxSize: 100
   portalRenderTexturesPoolResizable: 1
