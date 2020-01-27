@@ -14,10 +14,10 @@ public class PortalRenderer : MonoBehaviour
     [Tooltip("When not in a portal occlusion volume, render all portals?")]
     public bool defaultRenderAllPortals = false;
 
-    //[System.NonSerialized]
-    //public 
+    public int debugRenderPortalCount = 0;
 
     private Portal[] allPortals;
+    private PortalOcclusionVolume[] portalOcclusionVolumes;
     private List<PortalRenderTexturePoolItem> renderTexturesToReleaseThisRender = new List<PortalRenderTexturePoolItem>();
 
     private void Awake()
@@ -28,20 +28,41 @@ public class PortalRenderer : MonoBehaviour
     private void Start()
     {
         allPortals = FindObjectsOfType<Portal>();
+        portalOcclusionVolumes = FindObjectsOfType<PortalOcclusionVolume>();
     }
 
     private void OnPreRender()
     {
-        renderTexturesToReleaseThisRender.Clear();
-        foreach (Portal portal in allPortals)
+        PortalOcclusionVolume currentVolume = null;
+        foreach (PortalOcclusionVolume portalOcclusionVolume in portalOcclusionVolumes)
         {
-            Portal.RenderViewThroughRecursive(
-                portal,
-                GameManager.instance.mainCamera.transform.position,
-                GameManager.instance.mainCamera.transform.rotation,
-                out PortalRenderTexturePoolItem portalRenderTexturePoolItem,
-                out Texture _);
-            renderTexturesToReleaseThisRender.Add(portalRenderTexturePoolItem);
+            if (portalOcclusionVolume.collider.bounds.Contains(transform.position))
+            {
+                currentVolume = portalOcclusionVolume;
+                break;
+            }
+        }
+
+        Portal[] portalsToRender = currentVolume ? currentVolume.visiblePortals : defaultRenderAllPortals ? allPortals : null;
+        debugRenderPortalCount = 0;
+        if (portalsToRender != null)
+        {
+            renderTexturesToReleaseThisRender.Clear();
+            foreach (Portal portal in portalsToRender)
+            {
+                // Frustum cull; do not render portal view through texture if not visible
+                if (portal.viewThroughToRenderer.isVisible)
+                {
+                    Portal.RenderViewThroughRecursive(
+                        portal,
+                        GameManager.instance.mainCamera.transform.position,
+                        GameManager.instance.mainCamera.transform.rotation,
+                        out PortalRenderTexturePoolItem portalRenderTexturePoolItem,
+                        out Texture _);
+                    renderTexturesToReleaseThisRender.Add(portalRenderTexturePoolItem);
+                    debugRenderPortalCount++;
+                }
+            }
         }
     }
 

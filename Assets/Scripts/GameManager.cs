@@ -45,7 +45,10 @@ public partial class GameManager : MonoBehaviour
     public int portalMaxRecursion = 1;
     [Tooltip("How many render textures to allocate initially for portal rendering? " +
         "Formula is n*m+q, where n is number of recursions and m is the max or average amount of visible portals per portal," +
-        "while q is the max or average amount of directly visible portals per portal occluder")]
+        "while q is the max or average amount of directly (not through other portals) visible portals at a given time," +
+        "or the max or average amount of visible portals in a portal occlusion volume. " +
+        "This can usually be set to 0 and just use resizable to dynamically size the pool when needed, but you can make it" +
+        "statically allocated only to reduce chance of hitches during gameplay")]
     public int portalRenderTexturesPoolInitialSize = 0;
     [Tooltip("Max amount of render textures allocated, if resizable, to prevent filling up entire memory")]
     public int portalRenderTexturesPoolMaxSize = 100;
