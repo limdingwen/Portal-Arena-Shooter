@@ -147,7 +147,7 @@ public class PlayerController : MonoBehaviour
 
         // Teleport to new spawn
         Transform spawn = GameManager.instance.GetRandomDeathmatchSpawn();
-        transform.SetPositionAndRotation(spawn.position, spawn.rotation);
+        transform.SetPositionAndRotation(spawn.position + GameManager.instance.globalSpawnOffset, spawn.rotation);
         Physics.SyncTransforms();
         ClipPlayerOutOfGround();
     }

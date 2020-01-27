@@ -291,6 +291,13 @@ public class Portal : MonoBehaviour
                     aiInput.ForcePathRecalculate();
                 }
 
+                // Rigidbody support
+                Rigidbody rigidbody = objectsInPortal[i].GetComponent<Rigidbody>();
+                if (rigidbody && rigidbody.isKinematic == false)
+                {
+                    rigidbody.velocity = TransformDirectionBetweenPortals(this, target, rigidbody.velocity);
+                }
+
                 // Update physics transforms after warp
                 Physics.SyncTransforms();
 

@@ -16,6 +16,8 @@ public partial class GameManager : MonoBehaviour
     public GameObject humanPlayerPrefab;
     [Tooltip("The AI player prefab")]
     public GameObject aiPlayerPrefab;
+    [Tooltip("To prevent players from clipping through the spawn")]
+    public Vector3 globalSpawnOffset;
 
     [Header("Deathmatch Spawns")]
     [Tooltip("Tag for deathmatch spawns")]
@@ -186,7 +188,7 @@ public partial class GameManager : MonoBehaviour
         GameObject spawn = spawnsList[Random.Range(0, spawnsList.Count)];
         spawnsList.Remove(spawn);
 
-        PlayerController newPlayer = Instantiate(playerPrefab, spawn.transform.position, spawn.transform.rotation).GetComponent<PlayerController>();
+        PlayerController newPlayer = Instantiate(playerPrefab, spawn.transform.position + globalSpawnOffset, spawn.transform.rotation).GetComponent<PlayerController>();
         newPlayer.team = team;
 
         return newPlayer;
