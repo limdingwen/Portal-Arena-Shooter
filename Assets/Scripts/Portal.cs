@@ -8,6 +8,20 @@ using UnityEngine.AI;
 /// </summary>
 public class Portal : MonoBehaviour
 {
+    private struct VisiblePortalResources
+    {
+        public Portal visiblePortal;
+        public PortalRenderTexturePoolItem portalRenderTexturePoolItem;
+        public Texture originalTexture;
+
+        public VisiblePortalResources(Portal visiblePortal, PortalRenderTexturePoolItem temporaryRenderTexture, Texture originalTexture)
+        {
+            this.visiblePortal = visiblePortal;
+            this.portalRenderTexturePoolItem = temporaryRenderTexture;
+            this.originalTexture = originalTexture;
+        }
+    }
+
     /// <summary>
     /// Transforms a position from a sender portal to the target portal.
     /// For example, if the position is 1 unit behind the sender portal,
@@ -63,6 +77,108 @@ public class Portal : MonoBehaviour
             rotation;
     }
 
+    /// <summary>
+    /// Renders a portal, with recursions.
+    /// The portal will follow the manually-defined portal visibility graph up to a certain number of recursions, depth-first.
+    /// It will then render the innermost portals first, followed by outer ones, all the way until the original one is rendered.
+    /// GameManager.instance.mainCamera MUST be defined before calling this function.
+    /// </summary>
+    /// <param name="portalToRender">Which portal are we rendering?</param>
+    /// <param name="refPosition">The reference camera's position</param>
+    /// <param name="refRotation">The reference camera's rotation</param>
+    /// <param name="temporaryRenderTexturePoolItem">Handle to the temporay render texture pool item used to render the portal. CALLEE MUST RELEASE AFTER USE!!!</param>
+    /// <param name="originalTexture">Handle to the original texture on the portal. Reset material back to this after use</param>
+    /// <param name="currentRecursion">How deep are we?</param>
+    /// <param name="overrideMaxRecursion">Override the global GameManager maxRecursion value</param>
+    public static void RenderViewThroughRecursive(
+        Portal portalToRender,
+        Vector3 refPosition,
+        Quaternion refRotation,
+        out PortalRenderTexturePoolItem temporaryRenderTexturePoolItem,
+        out Texture originalTexture,
+        int currentRecursion = 0,
+        int? overrideMaxRecursion = null)
+    {
+        // =======
+        // RECURSE
+        // =======
+
+        // Override max recursions
+        int maxRecursions = overrideMaxRecursion.HasValue ? overrideMaxRecursion.Value : GameManager.instance.portalMaxRecursion;
+
+        // Calculate target view through camera position
+        Vector3 targetRefPosition = TransformPositionBetweenPortals(portalToRender, portalToRender.target, refPosition);
+        Quaternion targetRefRotation = TransformRotationBetweenPortals(portalToRender, portalToRender.target, refRotation);
+
+        // Store visible portal resources to release and reset (see function description for details)
+        List<VisiblePortalResources> visiblePortalResourcesList = new List<VisiblePortalResources>();
+
+        // Recurse if not at limit
+        if (currentRecursion < maxRecursions)
+        {
+            foreach (Portal visiblePortal in portalToRender.target.viewThroughFromVisiblePortals)
+            {
+                RenderViewThroughRecursive(
+                    visiblePortal,
+                    targetRefPosition,
+                    targetRefRotation,
+                    out PortalRenderTexturePoolItem visiblePortalTemporaryRenderTexturePoolItem,
+                    out Texture visiblePortalOriginalTexture,
+                    currentRecursion + 1,
+                    overrideMaxRecursion);
+
+                visiblePortalResourcesList.Add(
+                    new VisiblePortalResources(visiblePortal, visiblePortalTemporaryRenderTexturePoolItem, visiblePortalOriginalTexture));
+            }
+        }
+
+        // ======
+        // RENDER
+        // ======
+
+        // Get new temporary render texture and set to portal's material
+        // Will be released by CALLEE, not by this function. This is so that the callee can use the render texture
+        // for their own purposes, such as a Render() or a main camera render, before releasing it.
+        temporaryRenderTexturePoolItem = GameManager.instance.GetPortalRenderTexture();
+        originalTexture = portalToRender.viewThroughToMaterial.GetTexture("_MainTex");
+        portalToRender.viewThroughToMaterial.SetTexture("_MainTex", temporaryRenderTexturePoolItem.renderTexture);
+
+        // Use portal camera
+        Camera portalCamera = GameManager.instance.portalCamera;
+        portalCamera.targetTexture = temporaryRenderTexturePoolItem.renderTexture;
+
+        // Set target camera transform
+        portalCamera.transform.SetPositionAndRotation(targetRefPosition, targetRefRotation);
+
+        // Convert target portal's plane to camera space (relative to target camera)
+        // Explanation: https://danielilett.com/2019-12-18-tut4-3-matrix-matching/
+        Vector4 targetViewThroughPlaneCameraSpace =
+            Matrix4x4.Transpose(Matrix4x4.Inverse(portalCamera.worldToCameraMatrix))
+            * portalToRender.target.viewThroughFromPlane;
+
+        // Set target camera projection matrix to clip walls between target portal and target camera
+        // Portal camera will inherit FOV and near/clip values from main camera.
+        portalCamera.projectionMatrix =
+            GameManager.instance.mainCamera.CalculateObliqueMatrix(targetViewThroughPlaneCameraSpace);
+
+        // Render portal camera to target texture
+        portalCamera.Render();
+
+        // =================
+        // RELEASE AND RESET
+        // =================
+
+        foreach (VisiblePortalResources resources in visiblePortalResourcesList)
+        {
+            // Reset to original texture
+            // So that it will remain correct if the visible portal is still expecting to be rendered
+            // on another camera but has already rendered its texture. Originally the texture may be overriden by other renders.
+            resources.visiblePortal.viewThroughToMaterial.SetTexture("_MainTex", resources.originalTexture);
+            // Release temp render texture
+            GameManager.instance.ReleasePortalRenderTexture(resources.portalRenderTexturePoolItem);
+        }
+    }
+
     [Tooltip("The target portal.")]
     public Portal target;
     [Tooltip("This transform represents the normal of the portal's visible surface.")]
@@ -78,13 +194,13 @@ public class Portal : MonoBehaviour
     [Tooltip("The portal surface shader. Used to generate the material at runtime.")]
     public Shader viewThroughToShader;
     private Material viewThroughToMaterial;
-    private RenderTexture viewThroughToTexture;
+    //private RenderTexture viewThroughToTexture;
 
     [Header("View through (from others)")]
-    [Tooltip("The camera that will be rendered by other portals.")]
-    public Camera viewThroughFromCamera;
     [System.NonSerialized]
-    public Vector4 viewThroughFromPlane;
+    public Vector4 viewThroughFromPlane; // Plane math object generated from portal position for clipping use
+    [Tooltip("Portal visibility graph for recursion. What portals will be visible, if other portals were to view through to this one?")]
+    public Portal[] viewThroughFromVisiblePortals;
 
     [Header("Teleportation")]
     [Tooltip("Disable teleportation for gameplay purposes or for performance reasons.")]
@@ -95,12 +211,8 @@ public class Portal : MonoBehaviour
 
     private void Awake()
     {
-        // Create render texture for portal view
-        viewThroughToTexture = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.DefaultHDR);
-
         // Assign render texture to portal view
         viewThroughToMaterial = new Material(viewThroughToShader);
-        viewThroughToMaterial.SetTexture("_MainTex", viewThroughToTexture);
         viewThroughToRenderer.material = viewThroughToMaterial;
 
         // Generate plane of this portal for view through purposes
@@ -110,9 +222,6 @@ public class Portal : MonoBehaviour
 
     private void Start()
     {
-        // Make target camera render onto our render texture
-        target.viewThroughFromCamera.targetTexture = viewThroughToTexture;
-
         // Generate nav mesh links
         OffMeshLink offMeshLink = gameObject.AddComponent<OffMeshLink>();
         Vector3 temp = navMeshLinkGuide.localPosition;
@@ -125,44 +234,7 @@ public class Portal : MonoBehaviour
 
     private void LateUpdate()
     {
-        UpdateViewThrough();
         UpdateTeleport();
-    }
-
-    private void UpdateViewThrough()
-    {
-        // Frustum cull portals
-        // Don't update and render target camera when this portal is not visible
-        if (!viewThroughToRenderer.isVisible)
-        {
-            target.viewThroughFromCamera.enabled = false;
-            return;
-        }
-        else
-        {
-            target.viewThroughFromCamera.enabled = true;
-        }
-
-        // Don't view through if no main camera (in game will appear as not updating)
-        // (shouldn't appear as anything anyway if there isn't a camera...)
-        if (!GameManager.instance.mainCamera)
-            return;
-
-        // Set target camera transform
-        target.viewThroughFromCamera.transform.SetPositionAndRotation(
-            TransformPositionBetweenPortals(this, target, GameManager.instance.mainCamera.transform.position),
-            TransformRotationBetweenPortals(this, target, GameManager.instance.mainCamera.transform.rotation));
-
-        // Convert target portal's plane to camera space (relative to target camera)
-        // Explanation: https://danielilett.com/2019-12-18-tut4-3-matrix-matching/
-        Vector4 targetViewThroughPlaneCameraSpace =
-            Matrix4x4.Transpose(Matrix4x4.Inverse(target.viewThroughFromCamera.worldToCameraMatrix))
-            * target.viewThroughFromPlane;
-
-        // Set target camera projection matrix to clip walls between target portal and target camera
-        // Portal camera will inherit FOV and near/clip values from main camera.
-        target.viewThroughFromCamera.projectionMatrix = 
-            GameManager.instance.mainCamera.CalculateObliqueMatrix(targetViewThroughPlaneCameraSpace);
     }
 
     private void UpdateTeleport()
@@ -249,6 +321,6 @@ public class Portal : MonoBehaviour
     private void OnDestroy()
     {
         Destroy(viewThroughToMaterial);
-        Destroy(viewThroughToTexture);
+        //Destroy(viewThroughToTexture);
     }
 }

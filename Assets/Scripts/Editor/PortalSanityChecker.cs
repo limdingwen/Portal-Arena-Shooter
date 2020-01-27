@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
+/// <summary>
+/// Checks for portal size mismatches and bidirectional linkage breaks and mismatches.
+/// </summary>
 public class PortalSanityChecker : ScriptableObject
 {
     const float GlobalScaleTolerance = 0.01f;

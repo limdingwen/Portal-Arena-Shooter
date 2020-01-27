@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// The game manager.
 /// </summary>
-public class GameManager : MonoBehaviour
+public partial class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
@@ -38,6 +38,21 @@ public class GameManager : MonoBehaviour
     [Tooltip("Automatically suicide if below this Y, to bring player back to playfield if he has glitched out of world")]
     public float killY = -10;
 
+    [Header("Portals")]
+    [Tooltip("Portal camera, reused by all portals for recursive rendering")]
+    public Camera portalCamera;
+    [Tooltip("The global max recursion for portal rendering")]
+    public int portalMaxRecursion = 1;
+    [Tooltip("How many render textures to allocate initially for portal rendering? " +
+        "Formula is n*m+q, where n is number of recursions and m is the max or average amount of visible portals per portal," +
+        "while q is the max or average amount of directly visible portals per portal occluder")]
+    public int portalRenderTexturesPoolInitialSize = 0;
+    [Tooltip("Max amount of render textures allocated, if resizable, to prevent filling up entire memory")]
+    public int portalRenderTexturesPoolMaxSize = 100;
+    [Tooltip("Allow the GameManager to allocate new render textures when needed? Only grows, does not shrink")]
+    public bool portalRenderTexturesPoolResizable = true;
+    private List<PortalRenderTexturePoolItem> portalRenderTexturesPool = new List<PortalRenderTexturePoolItem>();
+
     // Global instances
     [System.NonSerialized]
     public Camera mainCamera;
@@ -47,6 +62,12 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
+
+        // Allocate initial render textures
+        for (int i = 0; i < portalRenderTexturesPoolInitialSize; i++)
+        {
+            AllocatePortalRenderTexture();
+        }
     }
 
     private void Start()
@@ -59,6 +80,63 @@ public class GameManager : MonoBehaviour
         // Initially spawn at red and blue spawns
         InitialSpawn(blueTeam, false);
         InitialSpawn(redTeam, true);
+    }
+
+    /// <summary>
+    /// Gives the callee a pooled render texture. Use ReleasePortalRenderTexture once done with use.
+    /// </summary>
+    /// <returns>An unused render texture, or null if pool is full.</returns>
+    public PortalRenderTexturePoolItem GetPortalRenderTexture()
+    {
+        foreach (PortalRenderTexturePoolItem item in portalRenderTexturesPool)
+        {
+            if (!item.used)
+            {
+                // Return unused render texture
+                item.used = true;
+                return item;
+            }
+        }
+
+        // No unused render textures
+        if (portalRenderTexturesPoolResizable)
+        {
+            if (portalRenderTexturesPool.Count < portalRenderTexturesPoolMaxSize)
+            {
+                Debug.Log($"PortalRenderTexturePool full. Allocating new RT. New size is {portalRenderTexturesPool.Count + 1}.");
+                return AllocatePortalRenderTexture(true);
+            }
+            else {
+                Debug.LogWarning($"PortalRenderTexturePool full." +
+                    $"Resizing allowed but max size ({portalRenderTexturesPoolMaxSize}) is reached. Returning null.");
+                return null;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("PortalRenderTexturePool full. Resizing not allowed. Returning null.");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Releases the PortalRenderTexturePoolItem.
+    /// </summary>
+    /// <param name="item">The PortalRenderTexturePoolItem.</param>
+    public void ReleasePortalRenderTexture(PortalRenderTexturePoolItem item)
+    {
+        item.used = false;
+    }
+
+    private PortalRenderTexturePoolItem AllocatePortalRenderTexture(bool used = false)
+    {
+        RenderTexture renderTexture = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.DefaultHDR);
+        renderTexture.Create();
+
+        PortalRenderTexturePoolItem item = new PortalRenderTexturePoolItem(renderTexture, used);
+        portalRenderTexturesPool.Add(item);
+
+        return item;
     }
 
     private void InitialSpawn(Team team, bool includeHuman)
@@ -152,22 +230,12 @@ public class GameManager : MonoBehaviour
         else return redTeam;
     }
 
-    //private void Update()
-    //{
-    //    // Release mouse on tab
-    //    if (Input.GetKeyDown("tab"))
-    //    {
-    //        Debug.Log("Toggling mouse");
-    //        if (Cursor.visible)
-    //        {
-    //            Cursor.visible = false;
-    //            Cursor.lockState = CursorLockMode.Locked;
-    //        }
-    //        else
-    //        {
-    //            Cursor.visible = true;
-    //            Cursor.lockState = CursorLockMode.None;
-    //        }
-    //    }
-    //}
+    private void OnDestroy()
+    {
+        // Release render texture pool
+        foreach (PortalRenderTexturePoolItem item in portalRenderTexturesPool)
+        {
+            item.renderTexture.Release();
+        }
+    }
 }
